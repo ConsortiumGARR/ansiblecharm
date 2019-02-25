@@ -6,6 +6,10 @@ description: |
   A subordinate charm that runs a playbook from a git repository against localhost.
 tags:
   - ops
+series:
+  - bionic
+  - xenial
+  - trusty
 requires:
   juju-info:
     interface: juju-info
