@@ -17,14 +17,6 @@ Usage example:
     juju config simpleansible playbook_yaml="main.yaml" 
     juju add-relation ubuntu ansible
 
-## Known Limitations and Issues
-
-# Configuration
-
-    git_repo: git repository (HTTPS or SSH)
-    git_deploy_key: git deployment key (copy-paste of the SSH private key)
-    playbook_yaml: main ansible playbook yaml to execute
-
 # Contact Information
 
 Consortium GARR
