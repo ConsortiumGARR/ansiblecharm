@@ -1,0 +1,13 @@
+options:
+  git_repo:
+    type: string
+    default: ""
+    description: "git repoistory to be cloned. It should contain a playbook"
+  git_deploy_key:
+    type: string
+    default: ""
+    description: "private key used to clone the git repository"
+  playbook_yaml:
+    type: string
+    default: "playbook.yaml"
+    description: "The main playbook YAML"

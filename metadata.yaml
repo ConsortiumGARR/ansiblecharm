@@ -1,0 +1,12 @@
+name: ansible
+maintainer: GARR CSD <cloud-support@garr.it>
+subordinate: true
+summary: Run an Ansible playbook from a git repository against localhost
+description: |
+  A subordinate charm that runs a playbook from a git repository against localhost.
+tags:
+  - ops
+requires:
+  juju-info:
+    interface: juju-info
+    scope: container
