@@ -1,9 +1,15 @@
 name: ansible
 maintainer: GARR CSD <cloud-support@garr.it>
 subordinate: true
-summary: Run an Ansible playbook from a git repository against localhost
+summary: Subordinate charm to run an Ansible playbook from a git repository against localhost.
 description: |
-  A subordinate charm that runs a playbook from a git repository against localhost.
+  This subordinate Charm fetches an ansible playbook from a git repository
+  and then executes it on localhost.
+  
+  The rationale behind this Charm is that 1) the idempotency provided by
+  Ansible seem to fit the idempotency required by Juju Charm hook
+  implementations, 2) there are several ready to go Ansible playbooks available
+  online, 3) DevOps which prefer Ansible over scripting are facilitated.
 tags:
   - ops
 series:
