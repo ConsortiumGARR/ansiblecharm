@@ -2,12 +2,33 @@ options:
   git_repo:
     type: string
     default: ""
-    description: "git repoistory to be cloned. It should contain a playbook"
-  git_deploy_key:
-    type: string
-    default: ""
-    description: "private key used to clone the git repository"
+    description: |
+      URL of the git repository to be cloned. It should contain a playbook.
+      The URL can be any of the URLs supported by the git client.
+      Thus, URLs such as http://username:password@mydomain.org/myplaybook.git
+      can also be provided.
   playbook_yaml:
     type: string
     default: "playbook.yaml"
-    description: "The main playbook YAML"
+    description: The filename of the main YAML in the playbook to be executed.
+  git_deploy_key:
+    type: string
+    default: ""
+    description: |
+      Optional SSH private key that can be used to clone the git repository
+      over SSH.
+  update_eval:
+    type: string
+    default: "/bin/true"
+    description: |
+      Optional bash expression to be evaluated at the update hook (every 5
+      minutes).
+
+      The expression should check for a condition to hold (e.g. the presence of
+      a specific parameter in a configuration file).
+
+      Thus, if the expression returns 0 (true), the playbook is NOT executed.
+      Else, the playbook is executed.
+
+      Please note that the playbook is executed unconditionally in all the other
+      cases, i.e. when the configuration changes, a relation is joined, etc.

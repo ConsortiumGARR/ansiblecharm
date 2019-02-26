@@ -120,7 +120,16 @@ function update() {
         juju-log -l 'WARN' update called but blocked 
         return
     fi
-    run_playbook_wrap
+
+    juju-log -l 'INFO' evaluating update_eval
+    eval "$(config-get update_eval)"
+    updateeval=$?
+    juju-log -l 'INFO' update_eval returned $updateeval
+    if [ "$updateeval" == 0 ]; then
+        juju-log -l 'INFO' playbook not executed
+    else
+        run_playbook_wrap
+    fi
 }
 
 function relation_changed() {
