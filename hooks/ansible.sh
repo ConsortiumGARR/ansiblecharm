@@ -60,6 +60,9 @@ function run_playbook() {
     if [ "$(config-get become)" == "true" ]; then
         flags="${flags} -b "
     fi
+    if [ -n "$(config-get tags)" ]; then
+        flags="${flags} -t $(config-get tags) "
+    fi
     juju-log -l 'INFO' "ansible-playbook $flags -i $HOSTFILE ${GITDIR}/$playbook_yaml"
     # XXX: leave this as the last line of this function
     export HOME="$CHARM_DIR"
@@ -87,6 +90,10 @@ function confighostgroup() {
 
 function configbecome() {
     juju-log -l 'INFO' config.changed.become called 
+}
+
+function configtags() {
+    juju-log -l 'INFO' config.changed.tags called 
 }
 
 function donothing() {
@@ -162,6 +169,7 @@ function config_changed() {
     configplaybookyaml
     confighostgroup
     configbecome
+    configtags
     if clone; then
         status-set active
     else

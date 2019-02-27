@@ -40,3 +40,9 @@ options:
     type: boolean
     default: true
     description: Set the -b flag in the ansible-playbook command.
+  tags:
+    type: string
+    default: ""
+    description: |
+      Only run plays and tasks tagged with these values 
+      (-t option of the ansible-playbook command).
