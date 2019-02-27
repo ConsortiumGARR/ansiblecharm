@@ -28,6 +28,7 @@ function createansiblehosts() {
     echo "[${hostgroup}]" > $HOSTFILE
     echo "localhost ansible_connection=local" >> $HOSTFILE
     juju-log -l 'INFO' ansible hosts created
+    cat $HOSTFILE
 }
 
 function clone() {
@@ -64,36 +65,40 @@ function run_playbook() {
         flags="${flags} -t $(config-get tags) "
     fi
     juju-log -l 'INFO' "ansible-playbook $flags -i $HOSTFILE ${GITDIR}/$playbook_yaml"
-    # XXX: leave this as the last line of this function
+    # XXX: please leave this as the last line of this function
     export HOME="$CHARM_DIR"
     ansible-playbook $flags -i "$HOSTFILE" "${GITDIR}/$playbook_yaml"
 }
 
 # leaving these functions here to be ready to migrate to the reactive framework
 function configrepo() {
-    juju-log -l 'INFO' config.changed.git_repo called 
+    juju-log -l 'INFO' config.changed.git_repo called: $(config-get git_repo)
 }
 
 function configkey() {
-    juju-log -l 'INFO' config.changed.git_deploy_key called 
+    juju-log -l 'INFO' config.changed.git_deploy_key called: $(config-get git_deploy_key)
     installkey
 }
 
 function configplaybookyaml() {
-    juju-log -l 'INFO' config.changed.playbook_yaml called 
+    juju-log -l 'INFO' config.changed.playbook_yaml called: $(config-get playbook_yaml) 
 }
 
 function confighostgroup() {
-    juju-log -l 'INFO' config.changed.hostgroup called 
+    juju-log -l 'INFO' config.changed.hostgroup called: $(config-get hostgroup)  
     createansiblehosts
 }
 
 function configbecome() {
-    juju-log -l 'INFO' config.changed.become called 
+    juju-log -l 'INFO' config.changed.become called: $(config-get become)  
 }
 
 function configtags() {
-    juju-log -l 'INFO' config.changed.tags called 
+    juju-log -l 'INFO' config.changed.tags called: $(config-get tags)  
+}
+
+function configeval() {
+    juju-log -l 'INFO' config.changed.update_eval called: $(config-get update_eval)
 }
 
 function donothing() {
@@ -170,6 +175,7 @@ function config_changed() {
     confighostgroup
     configbecome
     configtags
+    configeval
     if clone; then
         status-set active
     else
