@@ -5,7 +5,7 @@
 #
 
 MAINDIR="$CHARM_DIR"
-HOSTFILE="${MAINDIR}/hosts"
+HOSTFILE="${MAINDIR}/ansiblecharmhosts"
 GITDIR="${MAINDIR}/mycharmplaybook"
 KEYDIR="${MAINDIR}/.ssh"
 KEYFILE="${KEYDIR}/git_id_rsa"
@@ -29,6 +29,13 @@ function createansiblehosts() {
     echo "localhost ansible_connection=local" >> $HOSTFILE
     juju-log -l 'INFO' ansible hosts created
     cat $HOSTFILE
+
+    inventorydir="$(config-get inventory_dir)"
+    if [ -n "$inventorydir" ]; then
+        rm -f "${GITDIR}/${inventorydir}/ansiblecharmhosts" 
+        ln -s "$HOSTFILE" "${GITDIR}/${inventorydir}/ansiblecharmhosts" 
+        juju-log -l 'INFO' "ansible hosts linked in inventory directory"
+    fi
 }
 
 function clone() {
@@ -41,7 +48,7 @@ function clone() {
     rm -rf "$GITDIR"
     branch="$(config-get git_branch)"
     if [ -n "$(config-get git_deploy_key)" ]; then
-            export GIT_SSH_COMMAND="ssh -i $KEYFILE"
+        export GIT_SSH_COMMAND="ssh -i $KEYFILE"
     fi
     git clone -b "$branch" "$repo" "$GITDIR" || return 1
     juju-log -l 'INFO' cloned
@@ -65,10 +72,16 @@ function run_playbook() {
     if [ -n "$(config-get tags)" ]; then
         flags="${flags} -t $(config-get tags) "
     fi
-    juju-log -l 'INFO' "ansible-playbook $flags -i $HOSTFILE ${GITDIR}/$playbook_yaml"
-    # XXX: please leave this as the last line of this function
+    inventorydir="$(config-get inventory_dir)"
+    if [ -n "$inventorydir" ]; then
+        flags="${flags} -i ${GITDIR}/${inventorydir}/ansiblecharmhosts "
+    else
+        flags="${flags} -i $HOSTFILE "
+    fi
+    juju-log -l 'INFO' "ansible-playbook $flags ${GITDIR}/$playbook_yaml"
     export HOME="$CHARM_DIR"
-    ansible-playbook $flags -i "$HOSTFILE" "${GITDIR}/$playbook_yaml"
+    # XXX: please leave this as the last line of this function
+    ansible-playbook $flags "${GITDIR}/$playbook_yaml"
 }
 
 # leaving these functions here to be ready to migrate to the reactive framework
@@ -105,6 +118,11 @@ function configtags() {
 
 function configeval() {
     juju-log -l 'INFO' config.changed.update_eval called: $(config-get update_eval)
+}
+
+function configinventorydir() {
+    juju-log -l 'INFO' config.changed.inventory_dir called: $(config-get inventory_dir)
+    createansiblehosts
 }
 
 function donothing() {
@@ -183,6 +201,7 @@ function config_changed() {
     configbecome
     configtags
     configeval
+    configinventorydir
     if clone; then
         status-set active
     else

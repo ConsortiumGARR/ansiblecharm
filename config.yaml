@@ -50,3 +50,10 @@ options:
     description: |
       Only run plays and tasks tagged with these values 
       (-t option of the ansible-playbook command).
+  inventory_dir:
+    type: string
+    default: ""
+    description: |
+      Inventory directory, relative to the git repository root.
+      In this way, inventory directories such as group_vars and host_vars can be 
+      made available to Ansible.
