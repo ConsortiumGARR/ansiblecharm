@@ -32,9 +32,10 @@ function createansiblehosts() {
 
     inventorydir="$(config-get inventory_dir)"
     if [ -n "$inventorydir" ]; then
-        rm -f "${GITDIR}/${inventorydir}/ansiblecharmhosts" 
-        ln -s "$HOSTFILE" "${GITDIR}/${inventorydir}/ansiblecharmhosts" 
-        juju-log -l 'INFO' "ansible hosts linked in inventory directory"
+        linkedinventory="${GITDIR}/${inventorydir}/ansiblecharmhosts" 
+        rm -f "$linkedinventory"
+        ln -s -v "$HOSTFILE" "$linkedinventory" 
+        juju-log -l 'INFO' "ansible hosts linked in inventory directory $linkedinventory"
     fi
 }
 
