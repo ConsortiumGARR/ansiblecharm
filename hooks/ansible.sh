@@ -177,6 +177,7 @@ function relation_changed() {
 function config_changed() {
     configkey
     configrepo
+    configbranch
     configplaybookyaml
     confighostgroup
     configbecome
