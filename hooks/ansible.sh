@@ -57,7 +57,7 @@ function run_playbook() {
     fi
     status-set maintenance "running playbook"
     flags=""
-    if [ "$(config-get become)" == "true" ]; then
+    if [ "$(config-get become)" == "True" ]; then
         flags="${flags} -b "
     fi
     if [ -n "$(config-get tags)" ]; then
