@@ -21,7 +21,11 @@ function installkey() {
 }
 
 function createansiblehosts() {
-    echo "[local]" > $HOSTFILE
+    hostgroup="$(config-get hostgroup)"
+    if [ -z "$hostgroup" ]; then
+        hostgroup="local"
+    fi
+    echo "[${hostgroup}]" > $HOSTFILE
     echo "localhost ansible_connection=local" >> $HOSTFILE
     juju-log -l 'INFO' ansible hosts created
 }
@@ -71,6 +75,11 @@ function configkey() {
 
 function configplaybookyaml() {
     juju-log -l 'INFO' config.changed.playbook_yaml called 
+}
+
+function confighostgroup() {
+    juju-log -l 'INFO' config.changed.hostgroup called 
+    createansiblehosts
 }
 
 function donothing() {
@@ -144,6 +153,7 @@ function config_changed() {
     configkey
     configrepo
     configplaybookyaml
+    confighostgroup
     if clone; then
         status-set active
     else
