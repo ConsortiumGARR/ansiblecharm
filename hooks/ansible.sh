@@ -53,6 +53,7 @@ function clone() {
     fi
     git clone -b "$branch" "$repo" "$GITDIR" || return 1
     juju-log -l 'INFO' cloned
+    git -C "$GITDIR" submodule init && git -C "$GITDIR" submodule update && juju-log -l 'INFO' submodules updated
     status-set active
 }
 
