@@ -81,8 +81,7 @@ function run_playbook() {
     fi
     juju-log -l 'INFO' "ansible-playbook $flags ${GITDIR}/$playbook_yaml"
     export HOME="$CHARM_DIR"
-    # XXX: please leave this as the last line of this function
-    ansible-playbook $flags "${GITDIR}/$playbook_yaml"
+    ansible-playbook $flags "${GITDIR}/$playbook_yaml" && return 0
 }
 
 # leaving these functions here to be ready to migrate to the reactive framework
@@ -194,21 +193,26 @@ function relation_changed() {
 }
 
 function config_changed() {
-    configkey
-    configrepo
-    configbranch
-    configplaybookyaml
-    confighostgroup
-    configbecome
-    configtags
     configeval
-    configinventorydir
+
+    configkey
+    configbranch
+    configrepo
+
     if clone; then
         status-set active
     else
         status-set blocked "could not clone repository"
         return
     fi
+
+    configinventorydir
+    confighostgroup
+    
+    configbecome
+    configtags
+    configplaybookyaml
+
     run_playbook_wrap
 }
 
