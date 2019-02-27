@@ -36,3 +36,7 @@ options:
     type: string
     default: ""
     description: Optional host group to which localhost is added.
+  become:
+    type: boolean
+    default: true
+    description: Set the -b flag in the ansible-playbook command.

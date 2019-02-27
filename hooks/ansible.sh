@@ -55,12 +55,15 @@ function run_playbook() {
         juju-log -l 'WARN' run_playbook called but blocked 
         return 1
     fi
-    # TODO: if not condition return
     status-set maintenance "running playbook"
-    juju-log -l 'INFO' "ansible-playbook -b -i $HOSTFILE ${GITDIR}/$playbook_yaml"
+    flags=""
+    if [ "$(config-get become)" == "true" ]; then
+        flags="${flags} -b "
+    fi
+    juju-log -l 'INFO' "ansible-playbook $flags -i $HOSTFILE ${GITDIR}/$playbook_yaml"
     # XXX: leave this as the last line of this function
     export HOME="$CHARM_DIR"
-    ansible-playbook -b -i "$HOSTFILE" "${GITDIR}/$playbook_yaml"
+    ansible-playbook $flags -i "$HOSTFILE" "${GITDIR}/$playbook_yaml"
 }
 
 # leaving these functions here to be ready to migrate to the reactive framework
@@ -80,6 +83,10 @@ function configplaybookyaml() {
 function confighostgroup() {
     juju-log -l 'INFO' config.changed.hostgroup called 
     createansiblehosts
+}
+
+function configbecome() {
+    juju-log -l 'INFO' config.changed.become called 
 }
 
 function donothing() {
@@ -154,6 +161,7 @@ function config_changed() {
     configrepo
     configplaybookyaml
     confighostgroup
+    configbecome
     if clone; then
         status-set active
     else
