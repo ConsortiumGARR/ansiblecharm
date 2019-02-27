@@ -181,6 +181,7 @@ function update() {
     if [ "$updateeval" == 0 ]; then
         juju-log -l 'INFO' playbook not executed
     else
+        createansiblehosts
         run_playbook_wrap
     fi
 }
