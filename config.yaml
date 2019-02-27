@@ -17,6 +17,10 @@ options:
     description: |
       Optional SSH private key that can be used to clone the git repository
       over SSH.
+  git_branch:
+    type: string
+    default: "master"
+    description: git branch to check out after cloning the git repository.
   update_eval:
     type: string
     default: "/bin/true"

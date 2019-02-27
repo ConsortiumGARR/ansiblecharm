@@ -39,10 +39,11 @@ function clone() {
     juju-log -l 'INFO' clone called $git_path $repo in $(pwd)
     status-set maintenance "cloning git repository at $repo"
     rm -rf "$GITDIR"
+    branch="$(config-get git_branch)"
     if [ -n "$(config-get git_deploy_key)" ]; then
             export GIT_SSH_COMMAND="ssh -i $KEYFILE"
     fi
-    git clone "$repo" "$GITDIR" || return 1
+    git clone -b "$branch" "$repo" "$GITDIR" || return 1
     juju-log -l 'INFO' cloned
     status-set active
 }
@@ -77,6 +78,11 @@ function configrepo() {
 
 function configkey() {
     juju-log -l 'INFO' config.changed.git_deploy_key called: $(config-get git_deploy_key)
+    installkey
+}
+
+function configbranch() {
+    juju-log -l 'INFO' config.changed.git_branch called: $(config-get git_branch)
     installkey
 }
 
