@@ -1,15 +1,12 @@
 #!/bin/bash
 
-#
-# Utility functions
-#
-
 MAINDIR="$CHARM_DIR"
 HOSTFILE="${MAINDIR}/ansiblecharmhosts"
 GITDIR="${MAINDIR}/mycharmplaybook"
 KEYDIR="${MAINDIR}/.ssh"
 KEYFILE="${KEYDIR}/git_id_rsa"
 
+@when 'install_key'
 function installkey() {
     # install the SSH key
     juju-log -l 'INFO' installkey called
@@ -20,6 +17,7 @@ function installkey() {
     juju-log -l 'INFO' key installed 
 }
 
+@when 'create_ansible_hosts'
 function createansiblehosts() {
     hostgroup="$(config-get hostgroup)"
     if [ -z "$hostgroup" ]; then
@@ -86,55 +84,56 @@ function run_playbook() {
 }
 
 # leaving these functions here to be ready to migrate to the reactive framework
+@when 'config.changed.git_repo'
 function configrepo() {
     juju-log -l 'INFO' config.changed.git_repo called: $(config-get git_repo)
 }
 
+@when 'config.changed.git_deploy_key'
 function configkey() {
     juju-log -l 'INFO' config.changed.git_deploy_key called: $(config-get git_deploy_key)
-    installkey
+    set-flag 'install_key'
 }
 
+@when 'config.changed.git_branch'
 function configbranch() {
     juju-log -l 'INFO' config.changed.git_branch called: $(config-get git_branch)
-    installkey
+    set-flag 'install_key'
 }
 
+@when 'config.changed.playbook_yaml'
 function configplaybookyaml() {
     juju-log -l 'INFO' config.changed.playbook_yaml called: $(config-get playbook_yaml) 
 }
 
+@when 'config.changed.hostgroup'
 function confighostgroup() {
     juju-log -l 'INFO' config.changed.hostgroup called: $(config-get hostgroup)  
-    createansiblehosts
+    set-flag 'create_ansible_hosts'
 }
 
+@when 'config.changed.become'
 function configbecome() {
     juju-log -l 'INFO' config.changed.become called: $(config-get become)  
 }
 
+@when 'config.changed.tags'
 function configtags() {
     juju-log -l 'INFO' config.changed.tags called: $(config-get tags)  
 }
 
+@when 'config.changed.update_eval'
 function configeval() {
     juju-log -l 'INFO' config.changed.update_eval called: $(config-get update_eval)
 }
 
+@when 'config.changed.inventory_dir'
 function configinventorydir() {
     juju-log -l 'INFO' config.changed.inventory_dir called: $(config-get inventory_dir)
-    createansiblehosts
+    set-flag 'create_ansible_hosts'
 }
 
-function donothing() {
-    juju-log -l 'INFO' donothing called 
-}
-
-
-#
-# Hooks
-#
-
+@when 'run-playbook'
 run_playbook_wrap() {
     juju-log  -l 'INFO' env $(env)
     juju-log  -l 'INFO' whoami $(whoami)
@@ -144,6 +143,10 @@ run_playbook_wrap() {
         status-set blocked "error running playbook"
     fi
 }
+
+#
+# Hooks
+#
 
 @hook 'install'
 function install() {
@@ -195,17 +198,11 @@ function relation_changed() {
     git_path="$(which git)"
     juju-log  -l 'INFO' juju-info-relation-changed called $ansible_path $git_path
     status-set active
-    run_playbook_wrap
+    set-flag 'run-playbook'
 }
 
 @hook 'config-changed'
 function config_changed() {
-    configeval
-
-    configkey
-    configbranch
-    configrepo
-
     if clone; then
         status-set active
     else
@@ -213,14 +210,7 @@ function config_changed() {
         return
     fi
 
-    configinventorydir
-    confighostgroup
-    
-    configbecome
-    configtags
-    configplaybookyaml
-
-    run_playbook_wrap
+    set-flag 'run-playbook'
 }
 
 
