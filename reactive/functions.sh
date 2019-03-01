@@ -98,19 +98,31 @@ run_playbook_wrap() {
     fi
 }
 
+@when_not 'config.set.git_repo'
+function no_repo() {
+    status-set blocked "Missing git_repo"
+}
+
+@when_any 'eval-update' 'config.changed.update_eval'
+function evaluate_on_update() {
+    clear_flag 'eval-update'
+    juju-log -l 'INFO' "evaluating update_eval"
+
+    eval "$(config-get update_eval)"
+    updateeval=$?
+
+    juju-log -l 'WARNING' "update_eval returned $updateeval"
+
+    if [ "$updateeval" == 0 ]; then
+        juju-log -l 'INFO' "playbook not executed"
+    else
+        set_flag 'reclone'
+    fi
+}
+
 #
 # Hooks
 #
-
-@hook 'start'
-function charmstart() {
-    git_repo=$(config-get git_repo)
-    if [ -z "$git_repo"]; then
-        status-set blocked "git_repo not configured"
-        return
-    fi
-    set_flag 'reclone'
-}
 
 @hook 'update-status'
 function update() {
@@ -119,16 +131,7 @@ function update() {
         juju-log -l 'WARN' "update called but status is blocked"
         return
     fi
-
-    juju-log -l 'INFO' "evaluating update_eval"
-    eval "$(config-get update_eval)"
-    updateeval=$?
-    juju-log -l 'WARNING' "update_eval returned $updateeval"
-    if [ "$updateeval" == 0 ]; then
-        juju-log -l 'INFO' "playbook not executed"
-    else
-        set_flag 'reclone'
-    fi
+    set_flag 'eval-update'
 }
 
 @hook 'juju-info-relation-changed'
