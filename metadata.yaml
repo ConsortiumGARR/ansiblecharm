@@ -1,4 +1,5 @@
 name: ansible
+display-name: ansible
 maintainer: GARR CSD <cloud-support@garr.it>
 subordinate: true
 summary: Subordinate charm to run an Ansible playbook from a git repository against localhost.

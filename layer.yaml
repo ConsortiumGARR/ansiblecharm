@@ -1,0 +1,9 @@
+includes:
+  - 'layer:basic'
+options:
+  basic:
+    # apt packages required by charm code
+    packages:
+      - 'bash'
+      - 'git'
+      - 'ansible'

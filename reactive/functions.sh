@@ -145,6 +145,7 @@ run_playbook_wrap() {
     fi
 }
 
+@hook 'install'
 function install() {
     status-set maintenance "installing git and ansible"
     # install packages
@@ -157,6 +158,7 @@ function install() {
     juju-log  -l 'INFO' install called $ansible_path $git_path
 }
 
+@hook 'start'
 function charmstart() {
     git_repo=$(config-get git_repo)
     if [ -z "$git_repo"]; then
@@ -167,6 +169,7 @@ function charmstart() {
     run_playbook_wrap
 }
 
+@hook 'update-status'
 function update() {
     juju-log -l 'INFO' update-status called 
     if [ "$(status-get)" == "blocked" ]; then
@@ -186,6 +189,7 @@ function update() {
     fi
 }
 
+@hook 'juju-info-relation-changed'
 function relation_changed() {
     ansible_path="$(which ansible-playbook)"
     git_path="$(which git)"
@@ -194,6 +198,7 @@ function relation_changed() {
     run_playbook_wrap
 }
 
+@hook 'config-changed'
 function config_changed() {
     configeval
 
