@@ -18,8 +18,29 @@ function installkey() {
     set_flag 'reclone'
 }
 
+@when_any 'reclone' 'config.changed.git_repo' 'config.changed.git_branch'
+function clone() {
+    clear_flag 'reclone'
+    repo="$(config-get git_repo)"
+    git_path="$(which git)"
+    # rm -rf myplaybook
+    # git clone $repo myplaybook
+    juju-log -l 'INFO' "clone called $git_path $repo in $(pwd)"
+    status-set maintenance "Cloning git repository at $repo"
+    rm -rf "$GITDIR"
+    branch="$(config-get git_branch)"
+    if [ -n "$(config-get git_deploy_key)" ]; then
+        export GIT_SSH_COMMAND="ssh -i $KEYFILE"
+    fi
+    git clone -b "$branch" "$repo" "$GITDIR" || return 1
+    juju-log -l 'INFO' "repository cloned"
+    git -C "$GITDIR" submodule init && git -C "$GITDIR" submodule update && juju-log -l 'INFO' "submodules updated"
+    set_flag 'ansiblehosts'
+}
+
 @when_any 'ansiblehosts' 'config.changed.hostgroup' 'config.changed.inventory_dir'
 function createansiblehosts() {
+    clear_flag 'ansiblehosts'
     hostgroup="$(config-get hostgroup)"
     if [ -z "$hostgroup" ]; then
         hostgroup="local"
@@ -37,25 +58,6 @@ function createansiblehosts() {
         juju-log -l 'INFO' "ansible hosts linked in inventory directory $linkedinventory"
     fi
     set_flag 'run-playbook'
-}
-
-@when_any 'reclone' 'config.changed.git_repo' 'config.changed.git_branch'
-function clone() {
-    repo="$(config-get git_repo)"
-    git_path="$(which git)"
-    # rm -rf myplaybook
-    # git clone $repo myplaybook
-    juju-log -l 'INFO' "clone called $git_path $repo in $(pwd)"
-    status-set maintenance "Cloning git repository at $repo"
-    rm -rf "$GITDIR"
-    branch="$(config-get git_branch)"
-    if [ -n "$(config-get git_deploy_key)" ]; then
-        export GIT_SSH_COMMAND="ssh -i $KEYFILE"
-    fi
-    git clone -b "$branch" "$repo" "$GITDIR" || return 1
-    juju-log -l 'INFO' "repository cloned"
-    git -C "$GITDIR" submodule init && git -C "$GITDIR" submodule update && juju-log -l 'INFO' "submodules updated"
-    set_flag 'ansiblehosts'
 }
 
 function run_playbook() {
@@ -88,8 +90,7 @@ function run_playbook() {
 
 @when_any 'run-playbook' 'config.changed.playbook_yaml' 'config.changed.become' 'config.changed.tags'
 run_playbook_wrap() {
-    juju-log  -l 'DEBUG' "env $(env)"
-    juju-log  -l 'DEBUG' "whoami $(whoami)"
+    clear_flag 'run-playbook'
     if run_playbook; then
         status-set active
     else
