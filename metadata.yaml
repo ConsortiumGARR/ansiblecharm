@@ -17,6 +17,7 @@ series:
   - bionic
   - xenial
   - trusty
+  - focal
 requires:
   juju-info:
     interface: juju-info
